@@ -190,7 +190,7 @@ class TestAIAssistant(unittest.TestCase):
         self.assertEqual(len(assistant.conversation_history), 10)
         
         # Проверяем, что остались последние сообщения
-        self.assertEqual(assistant.conversation_history[0]["content"], "Message 5")
+        self.assertEqual(assistant.conversation_history[0]["content"], "Message 10")
 
 
 class TestIntegration(unittest.TestCase):

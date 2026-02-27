@@ -6,7 +6,7 @@ Tesla AI Assistant - CLI интерфейс для управления Tesla с
 import cmd
 import sys
 import os
-from typing import Optional
+from typing import Any, Dict, List, Optional
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
