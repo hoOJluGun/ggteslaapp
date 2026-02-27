@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ggtesla-app
+  name: ggtesla
   namespace: argocd
 spec:
   project: default

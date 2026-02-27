@@ -1,0 +1,7 @@
+[package]
+name = "macos-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# fastmcp = "0.1.0" # hypothetical/placeholder for FastMCP-Rust integration

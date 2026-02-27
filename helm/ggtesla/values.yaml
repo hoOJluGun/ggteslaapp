@@ -1,0 +1,47 @@
+replicaCount: 2
+image:
+  repository: myrepo/helio-core
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: ggtesla.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+
+opaSidecar:
+  enabled: true
+  image: openpolicyagent/opa:latest

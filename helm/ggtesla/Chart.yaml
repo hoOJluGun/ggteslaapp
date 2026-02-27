@@ -1,6 +1,6 @@
 apiVersion: v2
 name: ggtesla
-description: A Helm chart for Kubernetes
+description: GG Tesla Full Stack Application
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

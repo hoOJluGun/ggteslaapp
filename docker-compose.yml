@@ -1,82 +1,133 @@
-version: "3.8"
+version: "3.9"
+
+x-common: &common
+  restart: unless-stopped
 
 services:
-  # Message Broker
   nats:
-    image: nats:latest
-    ports:
-      - "4222:4222"
-      - "8222:8222"
+    <<: *common
+    image: nats:2.10-alpine
     command: ["-js", "--http_port", "8222"]
+    ports: ["4222:4222", "8222:8222"]
     healthcheck:
-      test: ["CMD", "curl", "-s", "http://localhost:8222/varz"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 5
 
-  # Relational Database
   postgres:
-    image: postgres:15-alpine
+    <<: *common
+    image: postgres:16-alpine
     environment:
-      POSTGRES_USER: user
+      POSTGRES_USER: helio
       POSTGRES_PASSWORD: change-me
-      POSTGRES_DB: ggtesla
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: helio
+    ports: ["5432:5432"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
+      test: ["CMD-SHELL", "pg_isready -U helio"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Cache / Session Store
   redis:
+    <<: *common
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    ports: ["6379:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 5
 
-  # Vector DB for AI Embeddings
   chromadb:
-    image: chromadb/chroma:latest
-    ports:
-      - "8000:8000"
+    <<: *common
+    image: chromadb/chroma:0.5.0
+    ports: ["8000:8000"]
 
-  # Secrets Management
   vault:
-    image: hashicorp/vault:latest
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: change-me
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
-    ports:
-      - "8200:8200"
+    <<: *common
+    image: hashicorp/vault:1.17
+    command: ["server", "-config=/vault/config/vault.hcl"]
+    cap_add: ["IPC_LOCK"]
+    volumes:
+      - ./infra/vault/vault.hcl:/vault/config/vault.hcl:ro
+    ports: ["8200:8200"]
 
-  # OPA for Authz
   opa:
+    <<: *common
     image: openpolicyagent/opa:latest
-    command: ["run", "--server", "--log-level=debug"]
-    ports:
-      - "8181:8181"
+    command: ["run", "--server", "--log-level=debug", "/policies/policies.rego"]
+    volumes:
+      - ./infra/opa/policies.rego:/policies/policies.rego:ro
+    ports: ["8181:8181"]
 
-  # Core API Server (Node/Fastify stub)
+  ollama:
+    <<: *common
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes:
+      - ollama_data:/root/.ollama
+
+  scout:
+    <<: *common
+    image: alpine:3.20
+    command: ["sh", "-lc", "while true; do echo scout-ready; sleep 3600; done"]
+
   helio-core:
-    build:
-      context: ./core/helio
-    ports:
-      - "3000:3000"
+    <<: *common
+    build: ./core/helio
+    environment:
+      NATS_URL: nats://nats:4222
+      DATABASE_URL: postgres://helio:change-me@postgres:5432/helio
     depends_on:
+      nats:
+        condition: service_healthy
       postgres:
         condition: service_healthy
+    ports: ["3000:3000"]
+
+  telegram-bot:
+    <<: *common
+    build: ./apps/telegram-bot
+    environment:
+      NATS_URL: nats://nats:4222
+      TELEGRAM_BOT_TOKEN: YOUR_TELEGRAM_TOKEN_HERE
+    depends_on:
       nats:
         condition: service_healthy
 
-  # Rust Microservices (Stubs)
-  sfu-service:
-    build:
-      context: ./microservices/sfu
+  web:
+    <<: *common
+    build: ./apps/web
+    depends_on: [helio-core]
+    ports: ["5173:5173"]
+
+  sfu-rs:
+    <<: *common
+    build: ./microservices/sfu
+    environment:
+      NATS_URL: nats://nats:4222
     depends_on:
-      - nats
+      nats:
+        condition: service_healthy
+
+  crdt-sync-rs:
+    <<: *common
+    build: ./microservices/crdt-sync
+    environment:
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+
+  reporting-rs:
+    <<: *common
+    build: ./microservices/reporting
+    environment:
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+
+volumes:
+  ollama_data:

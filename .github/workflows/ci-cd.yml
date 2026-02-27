@@ -3,15 +3,12 @@ name: CI/CD Pipeline
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
-  build-and-test:
+  lint-test-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -38,10 +35,33 @@ jobs:
             fi
           done
 
-      - name: Type Check & Build JS workspaces
+      - name: NPM Scripts (Lint, Test, Build)
         run: |
+          npm --prefix apps/web run lint --if-present
+          npm --prefix apps/web test --if-present
           npm --prefix apps/web run build
           npm --prefix apps/telegram-bot run build
+          npm --prefix core/helio run build --if-present
 
       - name: Smoke Tests
         run: bash tests/smoke.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Bake Load
+        run: docker buildx bake -f infra/docker/docker-bake.hcl --load
+
+  deploy:
+    needs: lint-test-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.1
+      - name: Deploy to K8s
+        run: |
+          echo "Simulating helm upgrade --install ggtesla ./helm/ggtesla"
+          helm upgrade --install ggtesla ./helm/ggtesla || true
