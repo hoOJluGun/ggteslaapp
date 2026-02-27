@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ggtesla
+version: 0.1.0
+appVersion: "0.1.0"
+description: Helm chart for GG Tesla full-stack platform
+type: application

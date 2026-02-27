@@ -1,0 +1,25 @@
+openapi: 3.1.0
+info:
+  title: GG Tesla HELIO API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Service health
+      responses:
+        '200':
+          description: OK
+  /events/{subject}:
+    post:
+      summary: Publish event to NATS
+      parameters:
+        - name: subject
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+      responses:
+        '200':
+          description: Event published

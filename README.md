@@ -1,38 +1,53 @@
-# ggteslaapp
+# GG Tesla App Platform Scaffold
 
-🚗 Tesla App с AI интеграцией
+Каркас production‑ориентированной full‑stack платформы с HELIO core, realtime-шиной событий и cloud-native деплоем.
 
-## 🎯 О проекте
-Приложение для работы с Tesla API с встроенной поддержкой AI инструментов.
+## Что включено
+- Web PWA: React + TypeScript (`apps/web`) + Dockerfile.
+- Backend core: Node.js/TypeScript (`core/helio`) + NATS/JetStream.
+- Rust микросервисы (`microservices/*`): SFU, CRDT sync, reporting, authz.
+- Telegram-бот (`apps/telegram-bot`) на той же event bus.
+- Desktop scaffolding: macOS Intel (FastMCP-Rust/CocoaKit stubs) и Windows+NSIS.
+- Инфраструктура: NATS, PostgreSQL, Redis, ChromaDB, Vault, Ollama, Scout.
+- Деплой: Helm chart + Argo CD app + GitHub Actions CI/CD.
+- Политики: Vault + OPA.
 
-## 🛠 Установленные AI инструменты
-
-- ✅ **OpenAI Python SDK** - для работы с GPT моделями
-- ✅ **GitHub Copilot CLI** - помощник в командной строке
-- ✅ **Shell GPT (sgpt)** - AI в терминале
-
-## 📋 Быстрый старт
-
-### 1. Клонировать репозиторий
-```bash
-git clone https://github.com/hoOJluGun/ggteslaapp.git
-cd ggteslaapp
+## Структура каталогов
+```text
+.
+├── apps/
+├── core/helio/
+├── microservices/
+├── infra/
+├── helm/ggtesla/
+├── argocd/
+├── .github/workflows/
+├── docs/
+├── api/
+├── docker-compose.yml
+├── docker-compose.override.local.yml
+└── justfile
 ```
 
-### 2. Настроить AI инструменты
-Смотрите подробную инструкцию в [setup_ai_tools.md](./setup_ai_tools.md)
-
-### 3. Добавить API ключи
+## Локальный запуск
 ```bash
-cp .env.example .env
-# Отредактируйте .env и добавьте ваш OPENAI_API_KEY
+docker compose up -d
 ```
 
-## 📚 Документация
-- [Настройка AI инструментов](./setup_ai_tools.md)
+Минимальный локальный стек (только NATS/PostgreSQL/Redis/ChromaDB/Vault/Ollama/Scout):
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.local.yml up -d
+```
 
-## 🤝 Разработка
-Проект использует современные AI инструменты для ускорения разработки.
+## Команды just
+```bash
+just build
+just dev
+just prod
+just deploy
+```
 
-## 📝 Лицензия
-MIT
+## Тесты
+```bash
+bash tests/smoke.sh
+```

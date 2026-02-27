@@ -1,0 +1,77 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            apps/web/package.json
+            core/helio/package.json
+            apps/telegram-bot/package.json
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install web dependencies
+        run: npm --prefix apps/web install
+
+      - name: Install core dependencies
+        run: npm --prefix core/helio install
+
+      - name: Install bot dependencies
+        run: npm --prefix apps/telegram-bot install
+
+      - name: Type-check web
+        run: npx --yes tsc -p apps/web/tsconfig.json --noEmit
+
+      - name: Type-check core
+        run: npx --yes tsc -p core/helio/tsconfig.json --noEmit
+
+      - name: Type-check telegram bot
+        run: npx --yes tsc -p apps/telegram-bot/tsconfig.json --noEmit
+
+      - name: Rust microservices check
+        run: |
+          cargo check --manifest-path microservices/sfu-rs/Cargo.toml
+          cargo check --manifest-path microservices/crdt-sync-rs/Cargo.toml
+          cargo check --manifest-path microservices/reporting-rs/Cargo.toml
+          cargo check --manifest-path microservices/authz-rs/Cargo.toml
+
+      - name: Smoke test scaffold
+        run: bash tests/smoke.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate multi-arch bake file
+        run: docker buildx bake -f infra/docker/docker-bake.hcl --print
+
+  deploy:
+    needs: lint-test-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render helm manifests
+        run: |
+          curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm template ggtesla ./helm/ggtesla
+      - name: Trigger Argo CD sync hook (placeholder)
+        run: echo "Integrate Argo CD API token and sync command in production"
