@@ -1,38 +1,79 @@
-# ggteslaapp
+# GG Tesla App Platform Scaffold
 
-🚗 Tesla App с AI интеграцией
+Production-oriented full-stack scaffold for a HELIO core with web, Telegram bot, desktop clients, realtime infrastructure, and cloud-native deployment.
 
-## 🎯 О проекте
-Приложение для работы с Tesla API с встроенной поддержкой AI инструментов.
+## Included
+- React/TypeScript PWA (`apps/web`) with Dockerfile.
+- HELIO core (`core/helio`) using Node.js/TypeScript.
+- Rust microservices (`microservices/*`) for SFU, CRDT sync, reporting, and authz.
+- Telegram bot (`apps/telegram-bot`) on the same NATS + JetStream event bus.
+- macOS and Windows client scaffolding.
+- Local infrastructure via Docker Compose + override.
+- Helm chart + Argo CD app spec.
+- GitHub Actions CI/CD pipeline.
+- Vault + OPA governance scaffolding.
+- Just commands for build/dev/prod/deploy.
 
-## 🛠 Установленные AI инструменты
+## Directory Structure
 
-- ✅ **OpenAI Python SDK** - для работы с GPT моделями
-- ✅ **GitHub Copilot CLI** - помощник в командной строке
-- ✅ **Shell GPT (sgpt)** - AI в терминале
-
-## 📋 Быстрый старт
-
-### 1. Клонировать репозиторий
-```bash
-git clone https://github.com/hoOJluGun/ggteslaapp.git
-cd ggteslaapp
+```text
+.
+├── .github/workflows/ci-cd.yml
+├── api/openapi.yaml
+├── apps
+│   ├── macos/src/main.rs
+│   ├── telegram-bot/src/index.ts
+│   ├── web
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   └── src/main.tsx
+│   └── windows/src/main.ps1
+├── argocd/application.yaml
+├── core/helio/src/index.ts
+├── docker-compose.override.local.yml
+├── docker-compose.yml
+├── docs
+│   ├── API.md
+│   ├── CONTRIBUTING.md
+│   └── SECURITY.md
+├── helm/ggtesla
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   └── templates/deployment.yaml
+├── infra
+│   ├── nats/nats.conf
+│   ├── opa/policies.rego
+│   └── vault/vault.hcl
+├── justfile
+├── microservices
+│   ├── authz-rs/src/main.rs
+│   ├── crdt-sync-rs/src/main.rs
+│   ├── reporting-rs/src/main.rs
+│   └── sfu-rs/src/main.rs
+└── tests/smoke.sh
 ```
 
-### 2. Настроить AI инструменты
-Смотрите подробную инструкцию в [setup_ai_tools.md](./setup_ai_tools.md)
+## Local Development
 
-### 3. Добавить API ключи
 ```bash
-cp .env.example .env
-# Отредактируйте .env и добавьте ваш OPENAI_API_KEY
+docker compose up -d
 ```
 
-## 📚 Документация
-- [Настройка AI инструментов](./setup_ai_tools.md)
+For minimal local stack only:
 
-## 🤝 Разработка
-Проект использует современные AI инструменты для ускорения разработки.
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.local.yml up -d
+```
 
-## 📝 Лицензия
-MIT
+## Tests
+
+```bash
+just build
+just dev
+bash tests/smoke.sh
+```
+
+See also:
+- [Contributing](docs/CONTRIBUTING.md)
+- [Security](docs/SECURITY.md)
+- [API](docs/API.md)

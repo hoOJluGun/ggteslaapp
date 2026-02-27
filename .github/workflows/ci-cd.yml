@@ -1,0 +1,29 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm --prefix apps/web ci || true
+      - run: npm --prefix core/helio ci || true
+      - run: echo "Run lint and tests placeholders"
+      - run: docker buildx create --use
+      - run: docker buildx bake --print || true
+
+  deploy:
+    needs: lint-test-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Deploy via Argo CD sync trigger"
