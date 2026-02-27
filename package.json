@@ -1,0 +1,14 @@
+{
+    "name": "ggteslaapp",
+    "version": "1.0.0",
+    "description": "GG Tesla App Platform",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "core/*"
+    ],
+    "scripts": {
+        "dev": "just dev",
+        "build": "just build"
+    }
+}

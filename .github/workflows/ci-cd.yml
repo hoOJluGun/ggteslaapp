@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Rust Check and Test
+        run: |
+          for dir in microservices/*/; do
+            if [ -f "$dir/Cargo.toml" ]; then
+              cd "$dir"
+              cargo check
+              cargo test
+              cd ../../
+            fi
+          done
+
+      - name: Type Check & Lint (Node)
+        run: |
+          # npm run type-check # to be added
+
+      - name: Smoke Tests
+        run: bash tests/smoke.sh

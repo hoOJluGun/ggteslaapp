@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ggtesla-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: "https://github.com/hoOJluGun/ggteslaapp.git"
+    path: helm/ggtesla
+    targetRevision: HEAD
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
