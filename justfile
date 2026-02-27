@@ -5,13 +5,13 @@ build:
 	docker compose build
 
 dev:
-	@echo "Starting dev environment"
+	@echo "Starting full local environment"
 	docker compose up -d
 
 prod:
-	@echo "Render Helm templates for production"
+	@echo "Rendering Helm templates"
 	helm template ggtesla ./helm/ggtesla
 
 deploy:
-	@echo "Apply Argo CD application"
+	@echo "Applying Argo CD application"
 	kubectl apply -f argocd/application.yaml

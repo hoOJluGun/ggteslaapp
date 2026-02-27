@@ -1,79 +1,53 @@
 # GG Tesla App Platform Scaffold
 
-Production-oriented full-stack scaffold for a HELIO core with web, Telegram bot, desktop clients, realtime infrastructure, and cloud-native deployment.
+Каркас production‑ориентированной full‑stack платформы с HELIO core, realtime-шиной событий и cloud-native деплоем.
 
-## Included
-- React/TypeScript PWA (`apps/web`) with Dockerfile.
-- HELIO core (`core/helio`) using Node.js/TypeScript.
-- Rust microservices (`microservices/*`) for SFU, CRDT sync, reporting, and authz.
-- Telegram bot (`apps/telegram-bot`) on the same NATS + JetStream event bus.
-- macOS and Windows client scaffolding.
-- Local infrastructure via Docker Compose + override.
-- Helm chart + Argo CD app spec.
-- GitHub Actions CI/CD pipeline.
-- Vault + OPA governance scaffolding.
-- Just commands for build/dev/prod/deploy.
+## Что включено
+- Web PWA: React + TypeScript (`apps/web`) + Dockerfile.
+- Backend core: Node.js/TypeScript (`core/helio`) + NATS/JetStream.
+- Rust микросервисы (`microservices/*`): SFU, CRDT sync, reporting, authz.
+- Telegram-бот (`apps/telegram-bot`) на той же event bus.
+- Desktop scaffolding: macOS Intel (FastMCP-Rust/CocoaKit stubs) и Windows+NSIS.
+- Инфраструктура: NATS, PostgreSQL, Redis, ChromaDB, Vault, Ollama, Scout.
+- Деплой: Helm chart + Argo CD app + GitHub Actions CI/CD.
+- Политики: Vault + OPA.
 
-## Directory Structure
-
+## Структура каталогов
 ```text
 .
-├── .github/workflows/ci-cd.yml
-├── api/openapi.yaml
-├── apps
-│   ├── macos/src/main.rs
-│   ├── telegram-bot/src/index.ts
-│   ├── web
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   └── src/main.tsx
-│   └── windows/src/main.ps1
-├── argocd/application.yaml
-├── core/helio/src/index.ts
-├── docker-compose.override.local.yml
+├── apps/
+├── core/helio/
+├── microservices/
+├── infra/
+├── helm/ggtesla/
+├── argocd/
+├── .github/workflows/
+├── docs/
+├── api/
 ├── docker-compose.yml
-├── docs
-│   ├── API.md
-│   ├── CONTRIBUTING.md
-│   └── SECURITY.md
-├── helm/ggtesla
-│   ├── Chart.yaml
-│   ├── values.yaml
-│   └── templates/deployment.yaml
-├── infra
-│   ├── nats/nats.conf
-│   ├── opa/policies.rego
-│   └── vault/vault.hcl
-├── justfile
-├── microservices
-│   ├── authz-rs/src/main.rs
-│   ├── crdt-sync-rs/src/main.rs
-│   ├── reporting-rs/src/main.rs
-│   └── sfu-rs/src/main.rs
-└── tests/smoke.sh
+├── docker-compose.override.local.yml
+└── justfile
 ```
 
-## Local Development
-
+## Локальный запуск
 ```bash
 docker compose up -d
 ```
 
-For minimal local stack only:
-
+Минимальный локальный стек (только NATS/PostgreSQL/Redis/ChromaDB/Vault/Ollama/Scout):
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.override.local.yml up -d
 ```
 
-## Tests
-
+## Команды just
 ```bash
 just build
 just dev
-bash tests/smoke.sh
+just prod
+just deploy
 ```
 
-See also:
-- [Contributing](docs/CONTRIBUTING.md)
-- [Security](docs/SECURITY.md)
-- [API](docs/API.md)
+## Тесты
+```bash
+bash tests/smoke.sh
+```
