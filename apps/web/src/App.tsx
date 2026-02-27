@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { create } from 'zustand';
 
 type Notification = { id: number; message: string };
