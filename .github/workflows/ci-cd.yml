@@ -38,9 +38,10 @@ jobs:
             fi
           done
 
-      - name: Type Check & Lint (Node)
+      - name: Type Check & Build JS workspaces
         run: |
-          # npm run type-check # to be added
+          npm --prefix apps/web run build
+          npm --prefix apps/telegram-bot run build
 
       - name: Smoke Tests
         run: bash tests/smoke.sh
