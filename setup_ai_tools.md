@@ -11,7 +11,7 @@
 import openai
 
 # Установите API ключ
-openai.api_key = "ваш-ключ-здесь"
+openai.api_key = "YOUR_OPENAI_API_KEY_HERE"
 
 # Пример запроса
 response = openai.ChatCompletion.create(
